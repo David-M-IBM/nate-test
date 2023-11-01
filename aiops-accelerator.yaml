@@ -1,0 +1,69 @@
+- hosts: localhost
+  vars_files:
+    - ./group_vars/all.yaml
+    - ./group_vars/instana.yaml
+    - ./group_vars/turbonomic.yaml
+    - ./group_vars/cp4waiops.yaml
+  roles:
+    # OpenShift
+    - role: login-openshift
+    # Storage
+    - role: storage
+    # Certificates
+    - role: cert-manager
+    # Instana
+    - role: postgres
+      when: CONFIGURE_INSTANA == 'True'
+    - role: zookeeper
+      when: CONFIGURE_INSTANA == 'True'
+    - role: kafka
+      when: CONFIGURE_INSTANA == 'True'
+    - role: elasticsearch
+      when: CONFIGURE_INSTANA == 'True'
+    - role: cassandra
+      when: CONFIGURE_INSTANA == 'True'
+    - role: clickhouse
+      when: CONFIGURE_INSTANA == 'True'
+    - role: instana-operator
+      when: CONFIGURE_INSTANA == 'True'
+    - role: instana-core
+      when: CONFIGURE_INSTANA == 'True'
+    - role: instana-unit
+      when: CONFIGURE_INSTANA == 'True'
+    - role: instana-routes
+      when: CONFIGURE_INSTANA == 'True'
+    - role: instana-agent
+      when: CONFIGURE_INSTANA == 'True'
+    - role: api-token
+      when: CONFIGURE_INSTANA == 'True'
+    - role: website
+      when: CONFIGURE_INSTANA == 'True'
+    - role: app-perspective
+      when: CONFIGURE_INSTANA == 'True'
+    # Robot Shop
+    - role: robot-shop
+      when: CONFIGURE_ROBOT_SHOP == 'True'
+    # Turbonomic
+    - role: turbonomic
+      when: CONFIGURE_TURBONOMIC == 'True'
+    - role: kubeturbo
+      when: CONFIGURE_TURBONOMIC == 'True'
+    - role: turbonomic-users-license-group-policy
+      when: CONFIGURE_TURBONOMIC == 'True'
+    # CP4WAIOPS
+    - role: gitops
+      when: CONFIGURE_CP4WAIOPS == 'True'
+    - role: ssl-certs
+      when: CONFIGURE_CP4WAIOPS == 'True'
+    - role: credentials
+      when: CONFIGURE_CP4WAIOPS == 'True'
+    - role: permissions
+      when: CONFIGURE_CP4WAIOPS == 'True'
+    - role: argocd
+      when: CONFIGURE_CP4WAIOPS == 'True'
+    - role: shared-components
+      when: CONFIGURE_CP4WAIOPS == 'True'
+    - role: ai-manager
+      when: CONFIGURE_CP4WAIOPS == 'True'
+    - role: event-manager
+      when: CONFIGURE_CP4WAIOPS == 'True'

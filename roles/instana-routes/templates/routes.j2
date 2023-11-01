@@ -1,0 +1,72 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  creationTimestamp: null
+  name: base-domain
+  namespace: instana-core
+spec:
+  host: {{ PROXY_DOMAIN }}
+  port:
+    targetPort: https
+  tls:
+    termination: passthrough
+  to:
+    kind: ""
+    name: gateway
+    weight: null
+status: {}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  creationTimestamp: null
+  name: unit-0-tenant0-ui
+  namespace: instana-core
+spec:
+  host: unit0-tenant0.{{ PROXY_DOMAIN }}
+  port:
+    targetPort: https
+  tls:
+    termination: passthrough
+  to:
+    kind: ""
+    name: gateway
+    weight: null
+status: {}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  creationTimestamp: null
+  name: acceptor
+  namespace: instana-core
+spec:
+  host: agent.{{ PROXY_DOMAIN }}
+  port:
+    targetPort: 8600
+  tls:
+    termination: passthrough
+  to:
+    kind: ""
+    name: acceptor
+    weight: null
+status: {}
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: eum
+  namespace: instana-core
+spec:
+  host: eum.{{ PROXY_DOMAIN }}
+  to:
+    kind: Service
+    name: eum-acceptor
+    weight: 100
+  port:
+    targetPort: http-service
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow
+  wildcardPolicy: None

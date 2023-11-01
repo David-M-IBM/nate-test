@@ -1,0 +1,11 @@
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: instana
+spec:
+  applicationMenu:
+    section: AIOps Accelerator
+  href: >-
+    https://unit0-tenant0.{{ PROXY_DOMAIN }}
+  location: ApplicationMenu
+  text: Instana

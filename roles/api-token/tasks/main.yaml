@@ -1,0 +1,19 @@
+---
+# tasks file for api-token
+- name: Get Instana API URL
+  shell: oc get routes -n instana-core | grep unit | awk '{print $2}'
+  register: INSTANA_API_URL_OUTPUT
+
+- name: Set Instana API URL
+  set_fact:
+    INSTANA_API_URL: "{{ INSTANA_API_URL_OUTPUT.stdout }}"
+
+- name: Configure API Token
+  register: INSTANA_API_TOKEN_OUTPUT
+  ansible.builtin.script: ./roles/api-token/files/api-token.py "{{ INSTANA_ADMIN_USER }}" "{{ INSTANA_ADMIN_PASS }}" "https://{{ INSTANA_API_URL }}"
+  args:
+    executable: python3
+
+- name: Set Instana API Token
+  set_fact:
+    INSTANA_API_TOKEN: "{{ INSTANA_API_TOKEN_OUTPUT.stdout | trim }}"

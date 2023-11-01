@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aiops-accelerator
+  labels:
+    name: aiops-accelerator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aiops-accelerator
+  namespace: aiops-accelerator
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: aiops-accelerator
+subjects:
+  - kind: ServiceAccount
+    name: aiops-accelerator
+    namespace: aiops-accelerator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: aiops-accelerator
+  namespace: aiops-accelerator
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      serviceAccount: aiops-accelerator
+      restartPolicy: Never
+      containers:
+        - name: aiops-accelerator
+          image: quay.io/nate_malone_ibm/aiops-accelerator:latest
+          imagePullPolicy: Always
+          # command: ["tail"]
+          # args: ["-f", "/dev/null"]
+          command: ["ansible-playbook", "aiops-accelerator.yaml"]
+          args:
+            - "-vvvvv"
+            - "--extra-vars"
+            - |-
+              CONFIGURE_INSTANA='True'
+              CONFIGURE_ROBOT_SHOP='True'
+              CONFIGURE_TURBONOMIC='True'
+              CONFIGURE_CP4WAIOPS='True'
+              BLOCK_STORAGE_CLASS='ocs-storagecluster-ceph-rbd'
+              FS_STORAGE_CLASS='ocs-storagecluster-cephfs'
+              INSTANA_SALES_KEY=''
+              INSTANA_AGENT_KEY=''
+              INSTANA_DOWNLOAD_KEY=''
+              INSTANA_ADMIN_USER='8.9.1''
+              INSTANA_ADMIN_PASS=''
+              KEY_PASSWORD=''
+              TOKEN_SECRET=''
+              TURBOSERVER_VERSION='8.9.1'
+              KUBETURBO_VERSION='8.9.1'
+              TURBO_SERVER_ADMINUSER=''
+              TURBO_SERVER_ADMINUSER_PWD=''
+              TURBO_SERVER_DEMOUSER=''
+              TURBO_SERVER_DEMOUSER_PWD=''
+              TURBONOMIC_LICENSE: |
+                

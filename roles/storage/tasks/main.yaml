@@ -1,0 +1,10 @@
+---
+# tasks file for storage
+- name: Get Default StorageClass
+  shell: oc get storageclass | grep "(default)" | cut -d ' ' -f1
+  register: DEFAULT_STORAGECLASS
+
+- name: Configure Default StorageClass
+  shell: |
+    oc annotate storageclass "{{ DEFAULT_STORAGECLASS.stdout }}" storageclass.kubernetes.io/is-default-class-
+    oc annotate storageclass "{{ BLOCK_STORAGE_CLASS }}" storageclass.kubernetes.io/is-default-class="true"

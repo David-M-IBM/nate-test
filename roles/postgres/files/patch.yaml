@@ -1,0 +1,15 @@
+---
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: postgres
+  namespace: instana-postgres
+spec:
+  patroni:
+    pg_hba:
+      - local     all          all                            trust
+      - host      all          all          0.0.0.0/0         trust
+      - local     replication  standby                        trust
+      - hostssl   replication  standby      all               trust
+      - hostnossl all          all          all               reject
+      - hostssl   all          all          all               trust

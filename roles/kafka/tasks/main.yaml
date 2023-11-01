@@ -1,0 +1,30 @@
+---
+# tasks file for kafka
+- name: Configure strimzi chart repository
+  kubernetes.core.helm_repository:
+    name: strimzi
+    repo_url: "https://strimzi.io/charts/"
+
+- name: Configure Kafka Operator
+  kubernetes.core.helm:
+    name: strimzi
+    chart_ref: strimzi/strimzi-kafka-operator
+    chart_version: 0.32.0
+    release_namespace: instana-kafka
+    create_namespace: true
+
+- name: Configure Kafka
+  kubernetes.core.k8s:
+    template: ./kafka.j2
+    namespace: instana-kafka
+    state: present
+
+- name: Wait for last Kafka Pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - statefulset.kubernetes.io/pod-name=instana-kafka-2
+    namespace: instana-kafka
+    wait_sleep: 10
+    wait_timeout: 720

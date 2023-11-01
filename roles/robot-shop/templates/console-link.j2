@@ -1,0 +1,11 @@
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: retail-shop
+spec:
+  applicationMenu:
+    section: AIOps Accelerator
+  href: >-
+    https://{{ ROBOT_SHOP_URL }}
+  location: ApplicationMenu
+  text: Retail Shop

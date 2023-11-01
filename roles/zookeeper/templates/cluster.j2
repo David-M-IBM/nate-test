@@ -1,0 +1,20 @@
+apiVersion: "zookeeper.pravega.io/v1beta1"
+kind: "ZookeeperCluster"
+metadata:
+  name: "instana-zookeeper"
+spec:
+  # For all params and defaults, see https://github.com/pravega/zookeeper-operator/tree/master/charts/zookeeper#configuration
+  replicas: 3
+  config:
+    tickTime: 2000
+    initLimit: 10
+    syncLimit: 5
+    maxClientCnxns: 0
+    autoPurgeSnapRetainCount: 20
+    autoPurgePurgeInterval: 1
+  persistence:
+    reclaimPolicy: Delete
+    spec:
+      resources:
+        requests:
+          storage: "{{ ZOOKEEPER_STORAGE }}"

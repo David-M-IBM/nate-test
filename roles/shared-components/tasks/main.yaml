@@ -1,0 +1,6 @@
+---
+# tasks file for shared-components
+- name: Configure shared components
+  kubernetes.core.k8s:
+    template: ./argocd-app.j2
+    state: present

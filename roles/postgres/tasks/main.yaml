@@ -1,0 +1,43 @@
+---
+# tasks file for postgres
+- name: Configure postgres chart repository
+  kubernetes.core.helm_repository:
+    name: postgres
+    repo_url: "https://opensource.zalando.com/postgres-operator/charts/postgres-operator"
+
+- name: Configure Postgres Operator
+  kubernetes.core.helm:
+    name: postgres-operator
+    chart_ref: postgres/postgres-operator
+    chart_version: 1.9.0
+    release_namespace: instana-postgres
+    create_namespace: true
+    values:
+      configGeneral:
+        kubernetes_use_configmaps: true
+      securityContext:
+        runAsUser: 101
+
+- name: Configure Postgres SecurityContextConstraints
+  kubernetes.core.k8s:
+    src: ./postgres_scc.yaml
+    state: present
+
+- name: Configure Postgres
+  ansible.builtin.template:
+    src: ./roles/postgres/templates/postgres.j2
+    dest: ./roles/postgres/files/postgres.yaml
+
+- name: Configure Postgres Datastore
+  k8s:
+    definition: "{{ lookup('kubernetes.core.kustomize', dir='./roles/postgres/files') }}"
+
+- name: Wait for last Postgres Pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - statefulset.kubernetes.io/pod-name=postgres-2
+    namespace: instana-postgres
+    wait_sleep: 10
+    wait_timeout: 720

@@ -1,0 +1,11 @@
+apiVersion: console.openshift.io/v1
+kind: ConsoleLink
+metadata:
+  name: turbonomic
+spec:
+  applicationMenu:
+    section: AIOps Accelerator
+  href: >-
+    https://{{ TURBO_SERVER_URL_API }}
+  location: ApplicationMenu
+  text: Turbonomic

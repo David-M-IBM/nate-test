@@ -1,0 +1,46 @@
+---
+# tasks file for instana-unit
+
+- name: Download Instana License
+  block:
+    - name: Download instana license
+      shell: oc instana license download --sales-key {{ INSTANA_SALES_KEY }}
+
+    - name: Set instana license
+      shell: cat license.json
+      register: INSTANA_LICENSE_OUTPUT
+
+    - name: Set instana license fact
+      set_fact: INSTANA_LICENSE={{ INSTANA_LICENSE_OUTPUT.stdout }}
+  when: (INSTANA_LICENSE is not defined) or (INSTANA_LICENSE | length == 0)
+
+- name: Configure instana units namespace
+  kubernetes.core.k8s:
+    src: ./namespace.yaml
+    state: present
+
+- name: Configure instana registry secret
+  kubernetes.core.k8s:
+    template: ./instana-registry-secret.j2
+    namespace: instana-units
+    state: present
+
+- name: Configure Instana Unit Secret config
+  ansible.builtin.template:
+    src: ./templates/config-unit-secret.j2
+    dest: ./roles/instana-unit/files/config-unit-secret.yaml
+
+- name: Get Instana Unit Secret config
+  ansible.builtin.command: cat ./roles/instana-unit/files/config-unit-secret.yaml
+  changed_when: false
+  register: UNIT_SECRET_CONFIG
+
+- name: Configure Instana Unit Secret
+  kubernetes.core.k8s:
+    template: ./templates/instana-unit-secret.j2
+    state: present
+
+- name: Configure Instana Unit
+  kubernetes.core.k8s:
+    template: ./templates/instana-unit.j2
+    state: present

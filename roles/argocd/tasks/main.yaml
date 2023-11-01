@@ -1,0 +1,6 @@
+---
+# tasks file for argocd
+- name: Configure Argo CD
+  kubernetes.core.k8s:
+    template: ./argocd-app.j2
+    state: present

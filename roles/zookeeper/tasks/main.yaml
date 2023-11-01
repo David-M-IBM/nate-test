@@ -1,0 +1,30 @@
+---
+# tasks file for zookeeper
+- name: Configure pravega chart repository
+  kubernetes.core.helm_repository:
+    name: pravega
+    repo_url: "https://charts.pravega.io"
+
+- name: Configure Zookeeper Operator for Clickhouse
+  kubernetes.core.helm:
+    name: instana
+    chart_ref: pravega/zookeeper-operator
+    chart_version: 0.2.14
+    release_namespace: instana-clickhouse
+    create_namespace: true
+
+- name: Configure Zookeeper Cluster
+  kubernetes.core.k8s:
+    template: ./cluster.j2
+    namespace: instana-clickhouse
+    state: present
+
+- name: Wait for last Zookeeper Pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - statefulset.kubernetes.io/pod-name=instana-zookeeper-2
+    namespace: instana-clickhouse
+    wait_sleep: 10
+    wait_timeout: 720

@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eventmanager-app
+  namespace: openshift-gitops
+spec:
+  destination:
+    name: ''
+    namespace: noi
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: config/cp4waiops/install-emgr
+    repoURL: 'https://github.com/IBM/cp4waiops-gitops'
+    targetRevision: release-3.6
+    helm:
+      parameters:
+      - name: spec.imageCatalog
+        value: icr.io/cpopen/ibm-operator-catalog:latest
+      - name: spec.storageClass
+        value: "{{ BLOCK_STORAGE_CLASS }}"
+      - name: spec.storageClassLargeBlock
+        value: "{{ BLOCK_STORAGE_CLASS }}"
+      - name: spec.eventManager.version
+        value: 1.6.6
+      - name: spec.eventManager.clusterDomain
+        value: "{{ PROXY_DOMAIN }}"
+      - name: spec.eventManager.channel
+        value: v1.10
+      - name: spec.eventManager.deploymentType
+        value: trial
+      - name: spec.eventManager.namespace
+        value: noi
+  project: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false

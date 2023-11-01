@@ -1,0 +1,53 @@
+---
+# tasks file for turbonomic
+- name: Configure Turbonomic Namespace
+  kubernetes.core.k8s:
+    src: ./namespace.yaml
+    state: present
+
+- name: Configure SecurityContextConstraints
+  kubernetes.core.k8s:
+    src: ./scc.yaml
+    state: present
+
+- name: Configure OperatorGroup
+  kubernetes.core.k8s:
+    src: ./operator-group.yaml
+    state: present
+
+- name: Create subscription
+  kubernetes.core.k8s:
+    src: ./subscription.yaml
+    state: present
+
+- name: Wait for CRD
+  shell: |
+    until [ "$(oc get crd -n turbonomic xls.charts.helm.k8s.io --ignore-not-found --no-headers | grep -c "")" -eq "1" ]; do
+        echo waiting
+        sleep 10
+    done
+
+- name: Configure XL Release
+  kubernetes.core.k8s:
+    template: ./instance.j2
+    state: present
+
+- name: Wait for 21 Pods to be Ready
+  shell: |
+    until [ "$(oc get po -n turbonomic |grep "1/"| wc -l)" -gt "20" ]; do
+        echo waiting
+        sleep 10
+    done
+
+- name: Get Turbo Server URL API
+  shell: oc get routes -n turbonomic | grep nginx | awk '{print $2}'
+  register: TURBO_SERVER_URL_API_OUTPUT
+
+- name: Set Turbo Server URL API
+  set_fact:
+    TURBO_SERVER_URL_API: "{{ TURBO_SERVER_URL_API_OUTPUT.stdout }}"
+
+- name: Configure ConsoleLink
+  kubernetes.core.k8s:
+    template: ./console-link.j2
+    state: present

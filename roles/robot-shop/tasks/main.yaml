@@ -1,0 +1,55 @@
+---
+# tasks file for robot-shop
+- name: Configure Namespace
+  kubernetes.core.k8s:
+    src: ./namespace.yaml
+    state: present
+
+- name: Get Robot Shop reporting URL
+  shell: oc get routes -n instana-core | grep eum | awk '{print $2}'
+  register: REPORTING_URL_OUTPUT
+
+- name: Set Instana API URL
+  set_fact:
+    REPORTING_URL: "{{ REPORTING_URL_OUTPUT.stdout }}"
+
+- name: Configure Robot Shop values
+  ansible.builtin.template:
+    src: ./templates/values.j2
+    dest: ./roles/robot-shop/files/helm/values.yaml
+
+- name: Configure RoleBindings
+  kubernetes.core.k8s:
+    src: ./role-bindings.yaml
+    state: present
+
+- name: Configure Robot Shop
+  kubernetes.core.helm:
+    name: robot-shop
+    chart_ref: ./roles/robot-shop/files/helm
+    release_namespace: robot-shop
+    create_namespace: true
+
+- name: Configure Route
+  kubernetes.core.k8s:
+    src: ./route.yaml
+    state: present
+
+- name: Get Robot Shop URL
+  shell: oc get routes -n robot-shop | grep web | awk '{print $2}'
+  register: ROBOT_SHOP_URL_OUTPUT
+
+- name: Set Robot Shop URL
+  set_fact:
+    ROBOT_SHOP_URL: "{{ ROBOT_SHOP_URL_OUTPUT.stdout }}"
+
+- name: Configure Load Deployment
+  kubernetes.core.k8s:
+    template: ./load-deployment.j2
+    state: present
+  when: SIMULATE_LOAD == 'True'
+
+- name: Configure ConsoleLink
+  kubernetes.core.k8s:
+    template: ./console-link.j2
+    state: present

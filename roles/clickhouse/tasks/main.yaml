@@ -1,0 +1,38 @@
+---
+# tasks file for clickhouse
+- name: Configure Clickhouse image Secret
+  kubernetes.core.k8s:
+    template: ./image-secret.j2
+    state: present
+
+- name: Configure Clickhouse Operator
+  kubernetes.core.k8s:
+    src: ./operator.yaml
+    namespace: instana-clickhouse
+    state: present
+
+- name: Wait for clickhouse operator Pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - app=clickhouse-operator
+    namespace: instana-clickhouse
+    wait_sleep: 10
+    wait_timeout: 720
+
+- name: Configure Clickhouse Datastore
+  kubernetes.core.k8s:
+    template: ./installation.j2
+    namespace: instana-clickhouse
+    state: present
+
+- name: Wait for last clickhouse Pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - statefulset.kubernetes.io/pod-name=chi-instana-local-0-1-0
+    namespace: instana-clickhouse
+    wait_sleep: 10
+    wait_timeout: 720

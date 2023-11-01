@@ -1,0 +1,124 @@
+---
+# tasks file for instana-core
+- name: Get proxy domain
+  shell: oc get ingress.config cluster -o jsonpath='{.spec.domain}'
+  register: PROXY_DOMAIN_OUTPUT
+
+- name: Set proxy domain
+  set_fact:
+    PROXY_DOMAIN: "{{ PROXY_DOMAIN_OUTPUT.stdout }}"
+
+- name: Configure Namespace
+  kubernetes.core.k8s:
+    src: ./namespace.yaml
+    state: present
+
+- name: Configure registry secret
+  kubernetes.core.k8s:
+    template: ./instana-registry-secret.j2
+    namespace: instana-core
+    state: present
+
+- name: Configure DH Params for Core Secret
+  register: DH_PARAMS
+  community.crypto.openssl_dhparam:
+    path: ./roles/instana-core/files/dhparams.pem
+    size: 2048
+    return_content: true
+
+- name: Configure Private Key for Core Secret
+  register: CORE_PRIVATE_KEY
+  community.crypto.openssl_privatekey:
+    path: ./roles/instana-core/files/key.pem
+    size: 2048
+    cipher: auto
+    type: RSA
+    passphrase: "{{ KEY_PASSWORD }}"
+    return_content: true
+
+- name: Configure Certificate Signing Request for Core Secret
+  community.crypto.openssl_csr:
+    path: ./roles/instana-core/files/instana.csr
+    privatekey_path: ./roles/instana-core/files/key.pem
+    privatekey_passphrase: "{{ KEY_PASSWORD }}"
+    common_name: "{{ PROXY_DOMAIN }}"
+
+- name: Configure Certificate for Core Secret
+  register: CORE_CERT
+  community.crypto.x509_certificate:
+    path: ./roles/instana-core/files/cert.pem
+    privatekey_path: ./roles/instana-core/files/key.pem
+    privatekey_passphrase: "{{ KEY_PASSWORD }}"
+    csr_path: ./roles/instana-core/files/instana.csr
+    provider: selfsigned
+    return_content: true
+
+- name: Configure Core Secret config
+  ansible.builtin.template:
+    src: ./roles/instana-core/templates/core-config.j2
+    dest: ./roles/instana-core/files/core-config.yaml
+
+- name: Get Core Secret config
+  ansible.builtin.command: cat ./roles/instana-core/files/core-config.yaml
+  register: CORE_CONFIG
+
+- name: Configure Core Secret
+  kubernetes.core.k8s:
+    template: ./core-secret.j2
+    state: present
+
+- name: Configure Private Key for TLS Secret
+  register: TLS_PRIVATE_KEY
+  community.crypto.openssl_privatekey:
+    path: ./roles/instana-core/files/tls.key
+    size: 2048
+    type: RSA
+    return_content: true
+
+- name: Configure Certificate Signing Request for TLS Secret
+  community.crypto.openssl_csr:
+    path: ./roles/instana-core/files/instana.csr
+    privatekey_path: ./roles/instana-core/files/tls.key
+    common_name: "{{ PROXY_DOMAIN }}"
+
+- name: Configure Self Signed Certificate for TLS Secret
+  register: TLS_CERT
+  community.crypto.x509_certificate:
+    path: ./roles/instana-core/files/tls.crt
+    privatekey_path: ./roles/instana-core/files/tls.key
+    csr_path: ./roles/instana-core/files/instana.csr
+    provider: selfsigned
+    return_content: true
+
+- name: Configure TLS Secret
+  kubernetes.core.k8s:
+    template: ./tls-secret.j2
+    state: present
+
+- name: Configure PersistentVolumeClaims
+  kubernetes.core.k8s:
+    template: ./templates/pvcs.j2
+    state: present
+
+- name: Configure Instana Core
+  kubernetes.core.k8s:
+    template: ./templates/instana-core.j2
+    state: present
+
+- name: Wait for Instana Core
+  kubernetes.core.k8s_info:
+    kind: Core
+    api_version: instana.io/v1beta2
+    name: instana-core
+    namespace: instana-core
+  register: INSTANA_CORE
+  retries: 200
+  delay: 6
+  until:
+    - INSTANA_CORE.resources is defined
+    - INSTANA_CORE.resources | length > 0
+    - INSTANA_CORE.resources[0].status is defined
+    - INSTANA_CORE.resources[0].status.componentsStatus is defined
+    - INSTANA_CORE.resources[0].status.componentsStatus == 'Ready'
+    - INSTANA_CORE.resources[0].status.dbMigrationStatus is defined
+    - INSTANA_CORE.resources[0].status.dbMigrationStatus == 'Ready'

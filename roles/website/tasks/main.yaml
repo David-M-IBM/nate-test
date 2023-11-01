@@ -1,0 +1,40 @@
+---
+# tasks file for website
+- name: Get websites
+  ansible.builtin.uri:
+    url: "https://{{ INSTANA_API_URL }}/api/website-monitoring/config"
+    method: GET
+    headers:
+      authorization: "apiToken {{ INSTANA_API_TOKEN }}"
+    validate_certs: no
+  register: WEBSITES_OUTPUT
+
+- block:
+  - name: Configure new website
+    ansible.builtin.uri:
+      url: "https://{{ INSTANA_API_URL }}/api/website-monitoring/config?name=Retail%20Shop"
+      method: POST
+      headers:
+        authorization: "apiToken {{ INSTANA_API_TOKEN }}"
+      validate_certs: no
+    register: WEBSITE_ID_OUTPUT
+
+  - name: Set Website ID
+    set_fact:
+      WEBSITE_ID: "{{ WEBSITE_ID_OUTPUT.json.id }}"
+  when: WEBSITES_OUTPUT | json_query('json[*].appName') | list | length == 0
+
+- block:
+  - name: Set Website ID
+    set_fact:
+      WEBSITE_ID: "{{ WEBSITES_OUTPUT | json_query('json[0].id') }}"
+  when: WEBSITES_OUTPUT | json_query('json[*].appName') | list | length != 0
+
+  # - name: Add custom dashboard
+  #   ansible.builtin.uri:
+  #     url: "https://{{ TURBO_SERVER_URL_API }}/api/custom-dashboard"
+  #     method: POST
+  #     body_format: json
+  #     body:
+  #       test: 
+  #     validate_certs: no

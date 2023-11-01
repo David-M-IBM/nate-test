@@ -1,0 +1,129 @@
+---
+# Core represents shared components and is responsible for configuring datastore access.
+# Generated from namespaces.yaml (kubectl-instana template --output-dir .)
+apiVersion: instana.io/v1beta2
+kind: Core
+metadata:
+  name: instana-core
+  namespace: instana-core
+spec:
+  agentAcceptorConfig:
+    host: agent.{{ PROXY_DOMAIN }}
+    port: 443
+  baseDomain: {{ PROXY_DOMAIN }}
+  componentConfigs:
+    - name: gateway
+      properties:
+        - name: nginx.http.server_names_hash_bucket_size
+          value: "256"
+    - name: acceptor
+      replicas: 1
+  datastoreConfigs:
+    cassandraConfigs:
+      - hosts:
+          - instana-cassandra-service.instana-cassandra
+        keyspaces:
+          - profiles
+        authEnabled: false
+      - hosts:
+          - instana-cassandra-service.instana-cassandra
+        keyspaces:
+          - spans
+          - metrics
+          - state
+        authEnabled: false
+    postgresConfigs:
+      - hosts:
+          - postgres.instana-postgres
+        databases:
+          - butlerdb
+          - tenantdb
+          - sales
+        authEnabled: false
+    clickhouseConfigs:
+      - hosts:
+          - chi-instana-local-0-0.instana-clickhouse
+          - chi-instana-local-0-1.instana-clickhouse
+        schemas:
+          - application
+          - logs
+        clusterName: local
+        authEnabled: false
+    elasticsearchConfig:
+      hosts:
+        - instana-es-http.instana-elastic
+      clusterName: onprem_onprem
+      authEnabled: false
+    kafkaConfig:
+      hosts:
+        - instana-kafka-bootstrap.instana-kafka
+      authEnabled: false
+      # saslMechanism: SCRAM-SHA-512
+  emailConfig:
+    smtpConfig:
+      from: test@example.com
+      host: example.com
+      port: 465
+      useSSL: false
+  imageConfig:
+    registry: artifact-public.instana.io
+  #rawSpansStorageConfig:
+  #  s3Config:
+  #    # Endpoint address of the object storage.
+  #    # Doesn't usually have to be set for S3.
+  #    endpoint:
+  #    # Region.
+  #    region: eu-central-1
+  #    # Bucket name.
+  #    bucket: mybucket
+  #    # Prefix for the storage bucket.
+  #    prefix: myspans
+  #   # Storage class.
+  #    storageClass: Standard
+  #    # Bucket name for long-term storage.
+  #    bucketLongTerm: mybucket
+  #    # Prefix for the long-term storage bucket.
+  #    prefixLongTerm: myspans-longterm
+  #    # Storage class for objects written to the long-term bucket.
+  #    storageClassLongTerm: Standard
+  #    accessKeyId:
+  #    secretAccessKey:
+  storageConfigs:
+    rawSpans:
+      pvcConfig:
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: {{FS_STORAGE_CLASS}}
+  resourceProfile: large
+  imagePullSecrets:
+    - name: instana-registry
+  # The operator can install network policies for restricting network traffic
+  # to what's required only. By default, network policies are disabled.
+  # Set this to true if you want to enable them. We suggest you leave this turned off
+  # initially until you've made sure everything works.
+  enableNetworkPolicies: false
+  # Infra metrics retention settings
+  {# properties:
+  - name: retention.metrics.rollup5
+    value: "86400"
+  - name: retention.metrics.rollup60
+    value: "2678400"
+  - name: retention.metrics.rollup300
+    value: "8035200"
+  - name: retention.metrics.rollup3600
+    value: "34214400"
+  # Application retention settings
+  # Must be >= 7
+  - name: config.appdata.shortterm.retention.days
+    value: "7" #}
+# Service provider configs for SAML or OIDC
+# serviceProviderConfig:
+# Base URL (defaults to "/auth")
+# basePath:
+
+# The maximum IDP metadata size (defaults to 200000)
+# maxAuthenticationLifetimeSeconds:
+
+# The maximum authentication lifetime (defaults to 604800)
+# maxIDPMetadataSizeInBytes:

@@ -1,0 +1,36 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: instana
+spec:
+  kafka:
+    version: 3.2.0
+    replicas: 3
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    storage:
+      type: jbod
+      volumes:
+        - id: 0
+          type: persistent-claim
+          size: "{{ KAFKA_STORAGE }}"
+          deleteClaim: true
+    config:
+      offsets.topic.replication.factor: 3
+      transaction.state.log.replication.factor: 3
+      transaction.state.log.min.isr: 3
+  zookeeper:
+    replicas: 3
+    storage:
+      type: persistent-claim
+      size: "{{ KAFKA_ZOOKEEPER_STORAGE }}"
+      deleteClaim: true
+  entityOperator:
+    template:
+      pod:
+        tmpDirSizeLimit: 100Mi
+    topicOperator: {}
+    userOperator: {}

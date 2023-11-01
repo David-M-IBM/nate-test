@@ -1,0 +1,15 @@
+---
+# tasks file for gitops
+- name: Configure OpenShift GitOps Operator
+  kubernetes.core.k8s:
+    template: ./operator.j2
+    state: present
+
+- name: Wait for OpenShift GitOps Pods
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: openshift-gitops
+  register: POD_LIST
+  until: POD_LIST|json_query('resources[*].status.phase')|unique == ["Running"]
+  retries: 25

@@ -1,0 +1,129 @@
+---
+- name: Configure turbonomic license file
+  copy:
+    content: "{{ TURBONOMIC_LICENSE }}"
+    dest: "./roles/turbonomic-users-license-group-policy/files/turbonomic-license.lic"
+
+- name: Configure Turbonomic User json
+  ansible.builtin.template:
+    src: ./roles/turbonomic-users-license-group-policy/templates/user.j2
+    dest: ./roles/turbonomic-users-license-group-policy/files/user.json
+
+- name: Get Turbo Server URL
+  shell: oc get routes -n turbonomic | grep nginx | awk '{print $2}'
+  register: TURBO_SERVER_URL_OUTPUT
+
+- name: Set Turbo Server URL
+  set_fact:
+    TURBO_SERVER_URL: "{{ TURBO_SERVER_URL_OUTPUT.stdout }}"
+
+- name: Get Turbo Server URL API
+  shell: oc get routes -n turbonomic | grep nginx | awk '{print $2}'
+  register: TURBO_SERVER_URL_API_OUTPUT
+
+- name: Set Turbo Server URL API
+  set_fact:
+    TURBO_SERVER_URL_API: "{{ TURBO_SERVER_URL_API_OUTPUT.stdout }}"
+
+- name: Configure initial administrator account
+  ansible.builtin.uri:
+    url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/initAdmin"
+    method: POST
+    body_format: form-urlencoded
+    body: '{
+      "username": "{{ TURBO_SERVER_ADMINUSER }}",
+      "password": "{{ TURBO_SERVER_ADMINUSER_PWD }}"
+      }'
+    validate_certs: no
+
+- name: Login to Turbonomic
+  register: LOGIN_RESULT
+  ansible.builtin.uri:
+    url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/login?hateoas=true"
+    method: POST
+    body_format: form-urlencoded
+    body: '{
+      "username": "{{ TURBO_SERVER_ADMINUSER }}",
+      "password": "{{ TURBO_SERVER_ADMINUSER_PWD }}"
+      }'
+    validate_certs: no
+    status_code: 200
+    timeout: 30
+
+- name: Configure login cookie
+  set_fact:
+    LOGIN_RESULT: "{{ LOGIN_RESULT }}"
+
+- name: Configure Turbonomic license
+  ansible.builtin.uri:
+    url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/licenses"
+    method: POST
+    return_content: yes
+    status_code: 200
+    body_format: form-multipart
+    body:
+      file:
+        content: '{{ lookup("file", "./roles/turbonomic-users-license-group-policy/files/turbonomic-license.lic") }}'
+        filename: "turbonomic-license.lic"
+        mime_type: application/xml
+    validate_certs: no
+    headers:
+      Cookie: "{{ LOGIN_RESULT.cookies_string }}"
+
+- name: Wait for license add
+  ansible.builtin.pause:
+    minutes: 1
+
+- name: Configure Turbonomic user
+  ansible.builtin.uri:
+    url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/users"
+    method: POST
+    return_content: yes
+    status_code: 200
+    body_format: json
+    body: "{{ lookup('template', './roles/turbonomic-users-license-group-policy/files/user.json') }}"
+    validate_certs: no
+    headers:
+      Cookie: "{{ LOGIN_RESULT.cookies_string }}"
+
+- name: Configure Group
+  ansible.builtin.uri:
+    url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/groups"
+    method: POST
+    return_content: yes
+    status_code: 200
+    body_format: json
+    body: "{{ lookup('file', './roles/turbonomic-users-license-group-policy/files/group.json') }}"
+    validate_certs: no
+    headers:
+      Cookie: "{{ LOGIN_RESULT.cookies_string }}"
+
+# TODO:
+# - name: Configure Settings Policy
+#   ansible.builtin.uri:
+#     url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/settingspolicies"
+#     method: POST
+#     return_content: yes
+#     status_code: 200
+#     body_format: json
+#     body: "{{ lookup('file', './roles/turbonomic-users-license-group-policy/files/policy.json') }}"
+#     validate_certs: no
+#     headers:
+#       Cookie: "{{ LOGIN_RESULT.cookies_string }}"
+
+- name: Configure Target yaml
+  ansible.builtin.template:
+    src: ./roles/turbonomic-users-license-group-policy/templates/target.j2
+    dest: ./roles/turbonomic-users-license-group-policy/files/target.json
+
+- name: Configure Target
+  ansible.builtin.uri:
+    url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/targets"
+    method: POST
+    return_content: yes
+    status_code: 200
+    body_format: json
+    body: "{{ lookup('file', './roles/turbonomic-users-license-group-policy/files/target.json') }}"
+    validate_certs: no
+    headers:
+      Cookie: "{{ LOGIN_RESULT.cookies_string }}"

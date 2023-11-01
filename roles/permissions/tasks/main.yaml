@@ -1,0 +1,6 @@
+---
+# tasks file for permissions
+- name: Configure Argo CD ClusterRoleBinding
+  kubernetes.core.k8s:
+    template: ./cluster-role-binding.j2
+    state: present

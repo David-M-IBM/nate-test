@@ -1,0 +1,107 @@
+---
+# tasks file for instana-operator
+- name: Configure Namespace
+  kubernetes.core.k8s:
+    src: ./namespace.yaml
+    state: present
+
+- name: Configure registry Secret
+  kubernetes.core.k8s:
+    template: ./instana-registry-secret.j2
+    namespace: instana-operator
+    state: present
+
+- name: Configure Operator
+  kubernetes.core.k8s:
+    src: ./certificate_instana-operator_instana-operator-webhook.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./clusterrole__instana-operator-webhook.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./clusterrole__instana-operator.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./clusterrolebinding__instana-operator-webhook.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./clusterrolebinding__instana-operator.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./customresourcedefinition__cores.instana.io.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./customresourcedefinition__datastores.instana.io.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./customresourcedefinition__units.instana.io.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./deployment_instana-operator_instana-operator-webhook.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./deployment_instana-operator_instana-operator.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./issuer_instana-operator_instana-operator-webhook.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./role_instana-operator_instana-operator-leader-election.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./rolebinding_instana-operator_instana-operator-leader-election.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./service_instana-operator_instana-operator-webhook.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./serviceaccount_instana-operator_instana-operator-webhook.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./serviceaccount_instana-operator_instana-operator.yaml
+    state: present
+
+- name: Configure Operator component
+  kubernetes.core.k8s:
+    src: ./validatingwebhookconfiguration__instana-operator-webhook-validating.yaml
+    state: present
+
+- name: Wait for Instana Operator Pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - app.kubernetes.io/name=instana
+    namespace: instana-operator
+    wait_sleep: 10
+    wait_timeout: 720

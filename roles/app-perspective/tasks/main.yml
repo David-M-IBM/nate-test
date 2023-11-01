@@ -1,0 +1,23 @@
+---
+# tasks file for app-perspective
+- name: Get application perspectives
+  ansible.builtin.uri:
+    url: "https://{{ INSTANA_API_URL }}/api/application-monitoring/settings/application"
+    method: GET
+    headers:
+      authorization: "apiToken {{ INSTANA_API_TOKEN }}"
+    validate_certs: no
+  register: APPLICATION_PERSPECTIVES_OUTPUT
+
+- block:
+  - name: Configure new application perspective
+    ansible.builtin.uri:
+      url: "https://{{ INSTANA_API_URL }}/api/application-monitoring/settings/application"
+      method: POST
+      headers:
+        authorization: "apiToken {{ INSTANA_API_TOKEN }}"
+      status_code: 200
+      body_format: json
+      body: "{{ lookup('template', './roles/app-perspective/files/app-perspective.json') }}"
+      validate_certs: no
+  when: APPLICATION_PERSPECTIVES_OUTPUT | json_query('json[*]') | list | length == 0

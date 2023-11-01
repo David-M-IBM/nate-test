@@ -1,0 +1,28 @@
+---
+# tasks file for instana-agent
+- name: Get proxy domain
+  shell: oc get ingress.config cluster -o jsonpath='{.spec.domain}'
+  register: PROXY_DOMAIN_OUTPUT
+
+- name: Set proxy domain
+  set_fact:
+    PROXY_DOMAIN: "{{ PROXY_DOMAIN_OUTPUT.stdout }}"
+
+- name: Configure Namespace
+  kubernetes.core.k8s:
+    src: ./namespace.yaml
+
+- name: Configure SecurityContextConstraints
+  kubernetes.core.k8s:
+    src: ./scc.yaml
+    state: present
+
+- name: Configure Operator
+  kubernetes.core.k8s:
+    src: ./operator.yaml
+    state: present
+
+- name: Configure Instana Agent
+  kubernetes.core.k8s:
+    template: ./instana-agent.j2
+    state: present

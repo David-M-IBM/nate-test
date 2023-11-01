@@ -1,0 +1,19 @@
+---
+# tasks file for instana-routes
+- name: Get proxy domain
+  shell: oc get ingress.config cluster -o jsonpath='{.spec.domain}'
+  register: PROXY_DOMAIN_OUTPUT
+
+- name: Set proxy domain
+  set_fact:
+    PROXY_DOMAIN: "{{ PROXY_DOMAIN_OUTPUT.stdout }}"
+
+- name: Configure Routes
+  kubernetes.core.k8s:
+    template: ./routes.j2
+    state: present
+
+- name: Configure ConsoleLink
+  kubernetes.core.k8s:
+    template: ./console-link.j2
+    state: present

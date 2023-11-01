@@ -1,0 +1,41 @@
+{
+    "uuid": "286100734490256",
+    "displayName": "[HA]NodeRole::master [Kubernetes-OpenShift-AIOps] 2",
+    "type": "MUST_NOT_RUN_TOGETHER",
+    "name": "74994501203728/NodeRole-master-Kubernetes-OpenShift-AIOps",
+    "enabled": true,
+    "commodityType": "DrsSegmentationCommodity",
+    "consumerGroup": {
+      "uuid": "286100734484625",
+      "displayName": "NodeRole-master-Kubernetes-OpenShift-AIOps",
+      "className": "Group",
+      "membersCount": 5,
+      "entitiesCount": 5,
+      "groupType": "VirtualMachine",
+      "environmentType": "HYBRID",
+      "isStatic": true,
+      "logicalOperator": "AND",
+      "memberUuidList": [
+        "74994501599984",
+        "74994501600736",
+        "74994501600493",
+        "74994501600248",
+        "74994501600618"
+      ],
+      "temporary": false,
+      "activeEntitiesCount": 5,
+      "cloudType": "UNKNOWN",
+      "source": {
+        "uuid": "74994501203728",
+        "displayName": "Kubernetes-OpenShift-AIOps",
+        "category": "Cloud Native",
+        "type": "Kubernetes",
+        "readonly": false
+      },
+      "memberTypes": ["VirtualMachine"],
+      "entityTypes": ["VirtualMachine"],
+      "groupOrigin": "DISCOVERED",
+      "groupClassName": "GroupApiDTO"
+    },
+    "providerEntityType": "PhysicalMachine"
+  }

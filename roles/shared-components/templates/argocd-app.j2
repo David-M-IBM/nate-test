@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cp-shared
+  namespace: openshift-gitops
+spec:
+  destination:
+    name: ''
+    namespace: openshift-marketplace
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: config/cp-shared/operators
+    repoURL: 'https://github.com/IBM/cp4waiops-gitops'
+    targetRevision: release-3.6
+    helm:
+      parameters:
+      - name: spec.imageCatalog
+        value: icr.io/cpopen/ibm-operator-catalog:latest
+      - name: spec.catalogName
+        value: ibm-operator-catalog
+      - name: spec.catalogNamespace
+        value: openshift-marketplace
+  project: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false

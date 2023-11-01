@@ -1,0 +1,25 @@
+{
+    "displayName": "Retail Shop",
+    "className": "Group",
+    "groupType": "ContainerSpec",
+    "severity": "NORMAL",
+    "environmentType": "HYBRID",
+    "isStatic": false,
+    "logicalOperator": "AND",
+    "criteriaList": [
+      {
+        "expVal": "robot-shop",
+        "expType": "RXEQ",
+        "filterType": "containerSpecsByNamespace",
+        "caseSensitive": false,
+        "entityType": null,
+        "singleLine": false
+      }
+    ],
+    "temporary": false,
+    "cloudType": "UNKNOWN",
+    "memberTypes": ["ContainerSpec"],
+    "entityTypes": ["ContainerSpec"],
+    "groupOrigin": "USER",
+    "groupClassName": "GroupApiDTO"
+  }

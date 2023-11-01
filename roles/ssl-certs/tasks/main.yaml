@@ -1,0 +1,13 @@
+---
+# tasks file for ssl-certs
+- name: Configure SSL Certificates
+  shell: |
+    mkdir $$tmp$$
+    cd $$tmp$$
+    ingress_secret_name=$(oc get ingresscontroller.operator default \
+    --namespace openshift-ingress-operator \
+    -o jsonpath='{.spec.defaultCertificate.name}')
+    oc extract secret/$ingress_secret_name -n openshift-ingress
+    oc create secret tls -n openshift-gitops openshift-gitops-tls --cert=tls.crt --key=tls.key --dry-run=client -o yaml | oc apply -f -
+    cd ..
+    rm -rf $$tmp$$

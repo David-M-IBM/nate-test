@@ -1,0 +1,6 @@
+---
+# tasks file for ai-manager
+- name: Configure AI Manager
+  kubernetes.core.k8s:
+    template: ./argocd-app.j2
+    state: present

@@ -1,0 +1,5 @@
+---
+# tasks file for login-openshift
+- name: Login to OpenShift  
+  shell: oc login --token="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" --server=https://kubernetes.default --certificate-authority='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+  changed_when: False

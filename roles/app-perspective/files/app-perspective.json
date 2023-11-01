@@ -1,0 +1,25 @@
+{
+  "accessRules": [
+    {
+      "accessType": "READ_WRITE",
+      "relatedId": null,
+      "relationType": "GLOBAL"
+    }
+  ],
+  "boundaryScope": "ALL",
+  "id": "jeZz9CiyRBuyBVIeyjZgiA",
+  "label": "Retail Shop",
+  "matchSpecification": null,
+  "scope": "INCLUDE_IMMEDIATE_DOWNSTREAM_DATABASE_AND_MESSAGING",
+  "tagFilterExpression": {
+    "booleanValue": null,
+    "entity": "DESTINATION",
+    "key": null,
+    "name": "kubernetes.namespace",
+    "numberValue": null,
+    "operator": "EQUALS",
+    "stringValue": "robot-shop",
+    "type": "TAG_FILTER",
+    "value": "robot-shop"
+  }
+}

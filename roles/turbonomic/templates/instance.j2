@@ -1,0 +1,119 @@
+apiVersion: charts.helm.k8s.io/v1
+kind: Xl
+metadata:
+  name: xl-release
+  namespace: turbonomic
+spec:
+  kafka:
+    #resources:
+    #  limits:
+    #    memory: 6Gi
+    persistence:
+      size: 30Gi
+  db:
+    #resources:
+    #  limits:
+    #    memory: 6Gi
+    persistence:
+      size: 30Gi
+  rsyslog:
+    #resources:
+    #  limits:
+    #    memory: 6Gi
+    persistence:
+      size: 30Gi
+  webhook:
+    enabled: false
+  servicenow:
+    enabled: false
+  websphere:
+    enabled: false
+  jvm:
+    enabled: false
+  actionscript:
+    enabled: false
+  xen:
+    enabled: false
+  mysql:
+    enabled: false
+  global:
+    customImageNames: false
+    repository: icr.io/cpopen/turbonomic
+    storageClassName: {{ BLOCK_STORAGE_CLASS }}
+    storageSelector: false
+    tag: "{{ TURBOSERVER_VERSION }}"
+  tomcat:
+    enabled: false
+  netapp:
+    enabled: false
+  hyperflex:
+    enabled: false
+  ucs:
+    enabled: false
+  udt:
+    enabled: false
+  mssql:
+    enabled: false
+  nutanix:
+    enabled: false
+  weblogic:
+    enabled: false
+  hyperv:
+    enabled: false
+  vcenter:
+    enabled: false
+  hpe3par:
+    enabled: false
+  oneview:
+    enabled: false
+  vmax:
+    enabled: false
+  instana:
+    enabled: true
+  azure:
+    enabled: false
+  actionstream-kafka:
+    enabled: false
+  scaleio:
+    enabled: false
+  wmi:
+    enabled: false
+  newrelic:
+    enabled: false
+  gcp:
+    enabled: false
+  appdynamics:
+    enabled: false
+  vmm:
+    enabled: false
+  jboss:
+    enabled: false
+  pure:
+    enabled: false
+  ibmstorage-flashsystem:
+    enabled: false
+  horizon:
+    enabled: false
+  appinsights:
+    enabled: false
+  dynatrace:
+    enabled: false
+  aws:
+    enabled: false
+  nginx:
+    httpsRedirect: false
+    nginxIsPrimaryIngress: false
+  nginxingress:
+    enabled: true
+  openshiftingress:
+    enabled: true
+  snmp:
+    enabled: false
+  oracle:
+    enabled: false
+  kubeturbo:
+    enabled: false
+  prometheus:
+    enabled: false
+  prometurbo:
+    enabled: false

@@ -1,0 +1,30 @@
+---
+# tasks file for elasticsearch
+- name: Configure elastic chart repository
+  kubernetes.core.helm_repository:
+    name: elastic
+    repo_url: "https://helm.elastic.co"
+
+- name: Configure Elasticsearch Operator
+  kubernetes.core.helm:
+    name: elastic-operator
+    chart_ref: elastic/eck-operator
+    chart_version: 2.5.0
+    release_namespace: instana-elastic
+    create_namespace: true
+
+- name: Configure Elasticsearch Datastore
+  kubernetes.core.k8s:
+    template: ./elasticsearch.j2
+    namespace: instana-elastic
+    state: present
+
+- name: Wait for last Elasticsearch Pod
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - statefulset.kubernetes.io/pod-name=instana-es-default-2
+    namespace: instana-elastic
+    wait_sleep: 10
+    wait_timeout: 720

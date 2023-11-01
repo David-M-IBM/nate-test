@@ -1,0 +1,40 @@
+---
+# tasks file for turbonomic
+- name: Configure Kubeturbo Namespace
+  kubernetes.core.k8s:
+    src: ./namespace.yaml
+    state: present
+
+- name: Get Turbo Server URL
+  shell: oc get routes -n turbonomic | grep nginx | awk '{print $2}'
+  register: TURBO_SERVER_URL_OUTPUT
+
+- name: Set Turbo Server URL
+  set_fact:
+    TURBO_SERVER_URL: "{{ TURBO_SERVER_URL_OUTPUT.stdout }}"
+    
+- name: Get Turbo Server URL API
+  shell: oc get routes -n turbonomic | grep nginx | awk '{print $2}'
+  register: TURBO_SERVER_URL_API_OUTPUT
+
+- name: Set Turbo Server URL API
+  set_fact:
+    TURBO_SERVER_URL_API: "{{ TURBO_SERVER_URL_API_OUTPUT.stdout }}"
+    
+- name: Configure Kubeturbo Operator
+  kubernetes.core.helm:
+    name: postgres-operator
+    chart_ref: ./roles/kubeturbo/files/kubeturbo-helm
+    release_namespace: kubeturbo
+    values:
+      serverMeta:
+        turboServer: "https://{{ TURBO_SERVER_URL }}"
+        version: "{{ TURBOSERVER_VERSION }}"
+      image:
+        tag: "{{ KUBETURBO_VERSION }}"
+      restAPIConfig:
+        opsManagerUserName: "{{ TURBO_SERVER_ADMINUSER }}"
+        opsManagerPassword: "{{ TURBO_SERVER_ADMINUSER_PWD }}"
+      targetConfig:
+        targetName: "{{ CLUSTER_IDENTIFIER }}"
+      roleBinding: "turbonomic-role-binding"

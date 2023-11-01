@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aimanager-app
+  namespace: openshift-gitops
+spec:
+  destination:
+    name: ''
+    namespace: cp4waiops
+    server: 'https://kubernetes.default.svc'
+  source:
+    path: config/cp4waiops/install-aimgr
+    repoURL: 'https://github.com/IBM/cp4waiops-gitops'
+    targetRevision: release-3.6
+    helm:
+      parameters:
+      - name: spec.storageClass
+        value: "{{ BLOCK_STORAGE_CLASS }}"
+      - name: spec.storageClassLargeBlock
+        value: "{{ BLOCK_STORAGE_CLASS }}"
+      - name: spec.aiManager.channel
+        value: v3.6
+      - name: spec.aiManager.size
+        value: small
+      - name: spec.aiManager.namespace
+        value: cp4waiops
+      - name: spec.aiManager.pakModules.aiopsFoundation.enabled
+        value: "true"
+      - name: spec.aiManager.pakModules.applicationManager.enabled
+        value: "true"
+      - name: spec.aiManager.pakModules.aiManager.enabled
+        value: "true"
+      - name: spec.aiManager.pakModules.connection.enabled
+        value: "true"
+  project: default
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false

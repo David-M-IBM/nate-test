@@ -1,0 +1,32 @@
+---
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: postgres
+  namespace: instana-postgres
+spec:
+  dockerImage: ghcr.io/zalando/spilo-15:2.1-p9
+  teamId: instana
+  numberOfInstances: 3
+  spiloRunAsUser: 101
+  spiloFSGroup: 103
+  spiloRunAsGroup: 103
+  postgresql:
+    version: "15"
+    parameters: # Expert section
+      shared_buffers: "32MB"
+      max_connections: "500"
+  volume:
+    size: 10Gi
+    # Before this file is used the storageClass will be manually
+    # altered with an ansible replace task. This is required because
+    # the file is imported using Kustomize and therefore jinja
+    # templating cannot be used.
+    storageClass: "{{ BLOCK_STORAGE_CLASS }}"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 1000m
+      memory: 4Gi

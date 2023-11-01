@@ -1,0 +1,15 @@
+---
+# tasks file for cert-manager
+- name: Configure Cert Manager
+  kubernetes.core.k8s:
+    src: ./cert-manager.yaml
+
+- name: Wait for Cert Manager Pods
+  kubernetes.core.k8s_info:
+    kind: Pod
+    wait: yes
+    label_selectors:
+      - app.kubernetes.io/instance=cert-manager
+    namespace: cert-manager
+    wait_sleep: 5
+    wait_timeout: 360
