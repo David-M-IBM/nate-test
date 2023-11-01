@@ -18,9 +18,9 @@ kubectl-instana
 target.json
 
 ### Ansible ###
-group_vars/instana.yaml
-group_vars/turbonomic.yaml
-group_vars/cp4waiops.yaml
+# group_vars/instana.yaml
+# group_vars/turbonomic.yaml
+# group_vars/cp4waiops.yaml
 roles/robot-shop/files/helm/values.yaml
 roles/instana-unit/files/config-unit-secret.yaml
 roles/robot-shop/files/helm/values.yaml
