@@ -20,4 +20,4 @@
       body_format: json
       body: "{{ lookup('template', './roles/app-perspective/files/app-perspective.json') }}"
       validate_certs: no
-  when: APPLICATION_PERSPECTIVES_OUTPUT | json_query('json[*]') | list | length == 0
+  when: APPLICATION_PERSPECTIVES_OUTPUT | json_query('json[*]') | list | length <= 1
