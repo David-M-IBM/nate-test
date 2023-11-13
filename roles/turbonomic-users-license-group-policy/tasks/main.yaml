@@ -30,10 +30,9 @@
     url: "https://{{ TURBO_SERVER_URL_API }}/api/v3/initAdmin"
     method: POST
     body_format: form-urlencoded
-    body: '{
-      "username": "{{ TURBO_SERVER_ADMINUSER }}",
-      "password": "{{ TURBO_SERVER_ADMINUSER_PWD }}"
-      }'
+    body:
+      username: "{{ TURBO_SERVER_ADMINUSER }}"
+      password: "{{ TURBO_SERVER_ADMINUSER_PWD }}"
     validate_certs: no
 
 - name: Login to Turbonomic
